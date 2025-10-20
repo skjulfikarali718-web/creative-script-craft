@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Copy, RefreshCw, Wand2 } from "lucide-react";
+import { Sparkles, Copy, RefreshCw, Wand2, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import type { User, Session } from '@supabase/supabase-js';
 
 type ScriptType = "explainer" | "narrative" | "outline";
 type Language = "english" | "bengali" | "hindi";
@@ -15,7 +17,39 @@ const Index = () => {
   const [language, setLanguage] = useState<Language>("english");
   const [isLoading, setIsLoading] = useState(false);
   const [output, setOutput] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Redirect to auth if user logs out
+        if (!session?.user) {
+          setTimeout(() => {
+            navigate("/auth");
+          }, 0);
+        }
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (!session?.user) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const generateScript = async (scriptType: ScriptType) => {
     if (!topic.trim()) {
@@ -70,11 +104,34 @@ const Index = () => {
     setOutput("");
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+  };
+
   return (
     <div className="min-h-screen p-4 md:p-8 lg:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1"></div>
+            <div className="flex-1"></div>
+            <div className="flex-1 flex justify-end">
+              {user && (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">{user.email}</span>
+                  <Button onClick={handleLogout} variant="outline" size="sm" className="gap-2">
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="flex items-center justify-center gap-2">
             <Sparkles className="w-8 h-8 text-primary animate-pulse" />
             <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
