@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Copy, RefreshCw, Wand2, LogOut } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Copy, RefreshCw, Wand2, LogOut, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import type { User, Session } from '@supabase/supabase-js';
+import { ScriptHistory } from "@/components/ScriptHistory";
 
 type ScriptType = "explainer" | "narrative" | "outline";
 type Language = "english" | "bengali" | "hindi";
@@ -76,6 +78,20 @@ const Index = () => {
       if (error) throw error;
 
       setOutput(data.script);
+      
+      // Save script to database
+      const { error: saveError } = await supabase.from("scripts").insert({
+        user_id: user?.id,
+        topic,
+        language,
+        script_type: scriptType,
+        content: data.script,
+      });
+
+      if (saveError) {
+        console.error("Error saving script:", saveError);
+      }
+
       toast({
         title: "✨ Script Generated!",
         description: "Your influencer script is ready to use.",
@@ -145,7 +161,20 @@ const Index = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid lg:grid-cols-2 gap-6">
+        <Tabs defaultValue="generate" className="space-y-6">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+            <TabsTrigger value="generate" className="gap-2">
+              <Wand2 className="w-4 h-4" />
+              Generate Script
+            </TabsTrigger>
+            <TabsTrigger value="history" className="gap-2">
+              <History className="w-4 h-4" />
+              History
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="generate" className="space-y-6">
+            <div className="grid lg:grid-cols-2 gap-6">
           {/* Input Section */}
           <Card className="glass-card p-6 space-y-6 animate-scale-in">
             <div className="space-y-2">
@@ -255,7 +284,13 @@ const Index = () => {
               )}
             </div>
           </Card>
-        </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history">
+            <ScriptHistory />
+          </TabsContent>
+        </Tabs>
 
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground">
