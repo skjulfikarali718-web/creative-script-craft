@@ -267,7 +267,7 @@ const Index = () => {
               )}
             </div>
 
-            <div className="min-h-[400px] max-h-[600px] overflow-y-auto bg-input/50 rounded-lg p-4 border border-border">
+            <div className="min-h-[400px] max-h-[600px] overflow-y-auto bg-input/50 rounded-lg p-6 border border-border">
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-full space-y-4">
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -276,7 +276,11 @@ const Index = () => {
                   </p>
                 </div>
               ) : output ? (
-                <pre className="whitespace-pre-wrap text-sm leading-relaxed">{output}</pre>
+                <div className="prose prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap text-base leading-loose text-foreground/90 font-sans">
+                    {output}
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-full text-center text-muted-foreground">
                   <p>Select a script type to generate your content ✨</p>
