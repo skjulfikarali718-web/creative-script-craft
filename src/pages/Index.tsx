@@ -132,15 +132,15 @@ const Index = () => {
     <div className="min-h-screen p-4 md:p-8 lg:p-12">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4 animate-fade-in">
+        <div className="text-center space-y-4 animate-fade-up">
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1"></div>
             <div className="flex-1"></div>
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end animate-slide-in-right">
               {user && (
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-muted-foreground">{user.email}</span>
-                  <Button onClick={handleLogout} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={handleLogout} variant="outline" size="sm" className="gap-2 hover-lift">
                     <LogOut className="w-4 h-4" />
                     Logout
                   </Button>
@@ -148,14 +148,14 @@ const Index = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-2">
-            <Sparkles className="w-8 h-8 text-primary animate-pulse" />
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
+          <div className="flex items-center justify-center gap-3">
+            <Sparkles className="w-8 h-8 text-primary animate-float" />
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent animate-glow-pulse">
               ScriptGenie
             </h1>
-            <Sparkles className="w-8 h-8 text-accent animate-pulse" />
+            <Sparkles className="w-8 h-8 text-accent animate-bounce-subtle" />
           </div>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto animate-fade-in" style={{animationDelay: '0.2s'}}>
             AI Script Writer for Influencers — Generate creative scripts instantly in English, Bengali, or Hindi
           </p>
         </div>
@@ -176,30 +176,30 @@ const Index = () => {
           <TabsContent value="generate" className="space-y-6">
             <div className="grid lg:grid-cols-2 gap-6">
           {/* Input Section */}
-          <Card className="glass-card p-6 space-y-6 animate-scale-in">
+          <Card className="glass-card p-6 space-y-6 animate-slide-in-left">
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
-                <Wand2 className="w-4 h-4 text-primary" />
+                <Wand2 className="w-4 h-4 text-primary animate-bounce-subtle" />
                 Enter your topic or idea
               </label>
               <Textarea
                 placeholder="e.g., The secret behind time travel, Karma explained, The mystery of dreams..."
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                className="min-h-[120px] bg-input border-border resize-none"
+                className="min-h-[120px] bg-input border-border resize-none hover-scale focus:ring-2 focus:ring-primary/50 transition-all"
               />
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Select Language</label>
               <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                <SelectTrigger className="bg-input border-border">
+                <SelectTrigger className="bg-input border-border hover-lift focus:ring-2 focus:ring-primary/50 transition-all">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">English</SelectItem>
-                  <SelectItem value="bengali">Bengali (বাংলা)</SelectItem>
-                  <SelectItem value="hindi">Hindi (हिंदी)</SelectItem>
+                  <SelectItem value="english" className="hover-lift">English</SelectItem>
+                  <SelectItem value="bengali" className="hover-lift">Bengali (বাংলা)</SelectItem>
+                  <SelectItem value="hindi" className="hover-lift">Hindi (हिंदी)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -247,19 +247,19 @@ const Index = () => {
           </Card>
 
           {/* Output Section */}
-          <Card className="glass-card p-6 space-y-4 animate-scale-in">
+          <Card className="glass-card p-6 space-y-4 animate-slide-in-right">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
+                <Sparkles className="w-5 h-5 text-primary animate-glow-pulse" />
                 Your Script
               </h2>
               {output && (
-                <div className="flex gap-2">
-                  <Button onClick={copyScript} variant="outline" size="sm" className="gap-2">
+                <div className="flex gap-2 animate-fade-in">
+                  <Button onClick={copyScript} variant="outline" size="sm" className="gap-2 hover-lift">
                     <Copy className="w-4 h-4" />
                     Copy
                   </Button>
-                  <Button onClick={regenerate} variant="outline" size="sm" className="gap-2">
+                  <Button onClick={regenerate} variant="outline" size="sm" className="gap-2 hover-lift">
                     <RefreshCw className="w-4 h-4" />
                     Clear
                   </Button>
