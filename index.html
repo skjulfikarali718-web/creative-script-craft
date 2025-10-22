@@ -1,24 +1,220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ScriptGenie - AI Script Writer for Influencers</title>
-    <meta name="description" content="Generate creative influencer scripts instantly in English, Bengali, or Hindi. Perfect for YouTubers, content creators, and social media influencers." />
-    <meta name="author" content="ScriptGenie" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScriptGenie - AI Script Writer for Creators</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Configuration for custom color palette and Inter font -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#6366f1', // Indigo 500
+                        'secondary': '#8b5cf6', // Violet 500
+                        'soft-bg': '#f3f4f6', // Gray 100
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Styles for Animation and Layout */
+        html, body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%); /* Subtle Blue-Gray Gradient */
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem 1.5rem; /* p-8 on all sides, p-6 on mobile */
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 320px;
+        }
 
-    <meta property="og:title" content="ScriptGenie - AI Script Writer for Influencers" />
-    <meta property="og:description" content="Generate creative influencer scripts instantly in English, Bengali, or Hindi. Perfect for YouTubers, content creators, and social media influencers." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+        /* --- Custom Fade-in Animation --- */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translate3d(0, 25px, 0); /* Start lower */
+            }
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            opacity: 0; /* Ensure elements start hidden */
+        }
+        
+        /* Staggered delays */
+        .animation-delay-200 { animation-delay: 0.2s; }
+        .animation-delay-400 { animation-delay: 0.4s; }
+        .animation-delay-600 { animation-delay: 0.6s; }
+        .animation-delay-800 { animation-delay: 0.8s; }
+        .animation-delay-1000 { animation-delay: 1.0s; }
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+        /* Button Hover & Mockup Container */
+        .btn-hover {
+            transition: all 0.3s ease;
+        }
+        .btn-hover:hover {
+            box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.4), 0 4px 6px -2px rgba(0,0,0,0.05);
+            transform: translateY(-3px) scale(1.02);
+        }
+        
+        /* Responsive adjustments for buttons on larger screens */
+        @media (min-width: 640px) {
+            .button-group {
+                flex-direction: row;
+                max-width: 500px;
+            }
+        }
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+        /* Mockup Grid Setup */
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .mockup-grid {
+                /* Adjusted to 2 columns for the remaining two items, and centered */
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2.5rem;
+                max-width: 700px; 
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+    </style>
+</head>
+
+<body class="text-gray-800">
+
+    <div class="app-container">
+
+        <!-- Main Content Wrapper (Centered, Max Width for Focus) -->
+        <main class="w-full max-w-xl mx-auto text-center bg-white p-8 sm:p-12 rounded-3xl shadow-2xl transition-all duration-300 border border-gray-100">
+            
+            <!-- Logo / App Icon -->
+            <div class="mb-6 animate-fadeInUp animation-delay-200">
+                <!-- IMPORTANT: Please replace the 'src' value below with the public URL to your 'logo.png' hosted on GitHub Pages. -->
+                <img src="https://placehold.co/150x150/6366f1/ffffff?text=SG+Logo" 
+                     alt="ScriptGenie App Logo" 
+                     class="w-32 h-32 mx-auto rounded-[30%] shadow-xl transition-transform duration-500 hover:rotate-2 hover:shadow-primary/50"
+                     onerror="this.onerror=null; this.src='https://placehold.co/150x150/6366f1/ffffff?text=SG';"
+                >
+            </div>
+            
+            <!-- App Name & Tagline -->
+            <h1 class="text-5xl sm:text-6xl font-black tracking-tighter text-gray-900 mb-2 animate-fadeInUp animation-delay-400">
+                ScriptGenie
+            </h1>
+            <p class="text-lg sm:text-xl text-gray-600 font-light mb-12 animate-fadeInUp animation-delay-400">
+                <span class="font-normal text-secondary">AI-powered Script Writer</span> for YouTubers & Creators
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="button-group mx-auto animate-fadeInUp animation-delay-600">
+                
+                <!-- Primary Action: Download APK -->
+                <a href="https://github.com/skjulfikarali718-web/creative-script-craft/releases/latest/download/ScriptGenie.apk" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="btn-hover flex-1 py-4 px-6 bg-primary text-white font-semibold text-lg rounded-2xl transition duration-300 shadow-lg shadow-primary/30 hover:bg-indigo-700"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline w-6 h-6 mr-2 -mt-1" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11h-3V4h-2v7H8l4 4 4-4zM4 17h16v2H4z"/>
+                    </svg>
+                    Download APK
+                </a>
+
+                <!-- Secondary Action: UPI Support -->
+                <a href="upi://pay?pa=myupi@upi&pn=SkJulfikarAli&am=&cu=INR" 
+                   target="_blank" 
+                   class="btn-hover flex-1 py-4 px-6 bg-secondary text-white font-semibold text-lg rounded-2xl transition duration-300 shadow-lg shadow-secondary/30 hover:bg-violet-700"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline w-6 h-6 mr-2 -mt-1" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V8h16v10z"/>
+                    </svg>
+                    Support me via UPI
+                </a>
+            </div>
+
+        </main>
+        
+        <!-- App Preview / Mockup Section -->
+        <section class="w-full max-w-5xl mx-auto mt-16 px-4">
+            <h2 class="text-2xl font-bold text-gray-700 mb-8 text-center animate-fadeInUp animation-delay-800">
+                A Glimpse Inside ScriptGenie
+            </h2>
+            
+            <div class="mockup-grid animate-fadeInUp animation-delay-1000">
+                
+                <!-- Mockup 1: Topic Input -->
+                <div class="mockup-item p-4 bg-white rounded-xl shadow-xl border border-gray-100 hover:shadow-2xl transition duration-300">
+                    <h3 class="font-semibold text-lg text-gray-900 mb-2">1. Quick Topic Input</h3>
+                    <!-- SVG Mobile Frame -->
+                    <svg class="w-full h-auto mx-auto" viewBox="0 0 250 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="10" width="230" height="430" rx="20" fill="#f7f7f7" stroke="#333" stroke-width="5"/>
+                        <rect x="25" y="30" width="200" height="20" rx="5" fill="#e5e7eb"/>
+                        <rect x="25" y="60" width="200" height="40" rx="8" fill="#fff" stroke="#6366f1" stroke-width="2"/>
+                        <rect x="35" y="70" width="180" height="20" rx="4" fill="#a5b4fc"/>
+                        <rect x="25" y="120" width="200" height="40" rx="8" fill="#8b5cf6"/>
+                        <text x="125" y="145" font-family="Inter, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">Generate Script</text>
+                        <circle cx="125" cy="440" r="5" fill="#333"/>
+                    </svg>
+                </div>
+
+                <!-- Mockup 2: AI Script Generation -->
+                <div class="mockup-item p-4 bg-white rounded-xl shadow-xl border border-gray-100 hover:shadow-2xl transition duration-300">
+                    <h3 class="font-semibold text-lg text-gray-900 mb-2">2. AI Generation</h3>
+                    <!-- SVG Mobile Frame -->
+                    <svg class="w-full h-auto mx-auto" viewBox="0 0 250 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="10" y="10" width="230" height="430" rx="20" fill="#f7f7f7" stroke="#333" stroke-width="5"/>
+                        <rect x="25" y="30" width="200" height="20" rx="5" fill="#e5e7eb"/>
+                        <rect x="25" y="60" width="200" height="300" rx="8" fill="#fff" stroke="#d1d5db" stroke-width="1"/>
+                        <rect x="35" y="70" width="180" height="15" rx="3" fill="#3b82f6"/>
+                        <rect x="35" y="95" width="150" height="15" rx="3" fill="#60a5fa"/>
+                        <rect x="35" y="120" width="180" height="15" rx="3" fill="#93c5fd"/>
+                        <rect x="35" y="145" width="170" height="15" rx="3" fill="#93c5fd"/>
+                        <rect x="35" y="170" width="160" height="15" rx="3" fill="#93c5fd"/>
+                        <rect x="35" y="205" width="180" height="15" rx="3" fill="#3b82f6"/>
+                        <rect x="35" y="230" width="140" height="15" rx="3" fill="#60a5fa"/>
+                        <rect x="35" y="320" width="100" height="30" rx="5" fill="#6366f1"/>
+                        <text x="85" y="340" font-family="Inter, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">Save</text>
+                        <circle cx="125" cy="440" r="5" fill="#333"/>
+                    </svg>
+                </div>
+
+            </div>
+        </section>
+        
+        <!-- Footer -->
+        <footer class="mt-16 text-sm text-gray-500 animate-fadeInUp animation-delay-1000">
+            Made with <span class="text-red-500">❤️</span> by Sk Julfikar Ali
+        </footer>
+
+    </div>
+
+</body>
 </html>
