@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import type { User, Session } from '@supabase/supabase-js';
 import { ScriptHistory } from "@/components/ScriptHistory";
+import { OnboardingModal } from "@/components/OnboardingModal";
 import { z } from "zod";
 
 type ScriptType = "explainer" | "narrative" | "outline";
@@ -144,6 +145,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-8 lg:p-12">
+      <OnboardingModal />
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-4 animate-fade-up">
