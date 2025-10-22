@@ -12,6 +12,29 @@ serve(async (req) => {
 
   try {
     const { topic, language, scriptType } = await req.json();
+    
+    // Validate inputs
+    if (!topic || typeof topic !== 'string' || topic.trim().length < 5 || topic.length > 500) {
+      return new Response(
+        JSON.stringify({ error: "Invalid topic: must be 5-500 characters" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!['english', 'bengali', 'hindi'].includes(language)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid language: must be english, bengali, or hindi" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!['explainer', 'narrative', 'outline'].includes(scriptType)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid script type: must be explainer, narrative, or outline" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {

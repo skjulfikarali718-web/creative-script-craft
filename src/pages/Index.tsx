@@ -10,9 +10,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import type { User, Session } from '@supabase/supabase-js';
 import { ScriptHistory } from "@/components/ScriptHistory";
+import { z } from "zod";
 
 type ScriptType = "explainer" | "narrative" | "outline";
 type Language = "english" | "bengali" | "hindi";
+
+const scriptInputSchema = z.object({
+  topic: z.string()
+    .trim()
+    .min(5, "Topic must be at least 5 characters")
+    .max(500, "Topic must be less than 500 characters")
+    .regex(/^[a-zA-Z0-9\s\p{L},.!?'-]+$/u, "Topic contains invalid characters"),
+  language: z.enum(["english", "bengali", "hindi"]),
+  scriptType: z.enum(["explainer", "narrative", "outline"])
+});
 
 const Index = () => {
   const [topic, setTopic] = useState("");
@@ -54,10 +65,13 @@ const Index = () => {
   }, [navigate]);
 
   const generateScript = async (scriptType: ScriptType) => {
-    if (!topic.trim()) {
+    // Validate input
+    const validation = scriptInputSchema.safeParse({ topic, language, scriptType });
+    
+    if (!validation.success) {
       toast({
-        title: "Topic Required",
-        description: "Please enter a topic or idea first!",
+        title: "Invalid Input",
+        description: validation.error.errors[0].message,
         variant: "destructive",
       });
       return;
