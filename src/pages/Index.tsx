@@ -24,14 +24,9 @@ type Tone = "funny" | "emotional" | "professional" | "casual" | "dramatic";
 const scriptInputSchema = z.object({
   topic: z.string()
     .trim()
-    .min(10, "Topic must be at least 10 characters")
-    .max(300, "Topic must be less than 300 characters")
-    .refine((val) => val.split(/\s+/).filter(w => w.length > 0).length >= 3, {
-      message: "Topic must contain at least 3 meaningful words"
-    })
-    .refine((val) => !val.toLowerCase().startsWith("generate"), {
-      message: "Please describe your topic directly (e.g., 'AI trends in 2025' instead of 'generate a video about AI')"
-    }),
+    .min(5, "Topic must be at least 5 characters")
+    .max(500, "Topic must be less than 500 characters")
+    .regex(/^[a-zA-Z0-9\s\p{L},.!?'-]+$/u, "Topic contains invalid characters"),
   language: z.enum(["english", "bengali", "hindi"]),
   scriptType: z.enum(["youtube", "reels", "movie", "podcast", "ad", "blog"])
 });
