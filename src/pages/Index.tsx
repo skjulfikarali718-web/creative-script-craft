@@ -28,7 +28,7 @@ const scriptInputSchema = z.object({
     .max(500, "Topic must be less than 500 characters")
     .regex(/^[a-zA-Z0-9\s\p{L},.!?'-]+$/u, "Topic contains invalid characters"),
   language: z.enum(["english", "bengali", "hindi"]),
-  scriptType: z.enum(["explainer", "narrative", "outline"])
+  scriptType: z.enum(["youtube", "reels", "movie", "podcast", "ad", "blog"])
 });
 
 const Index = () => {
