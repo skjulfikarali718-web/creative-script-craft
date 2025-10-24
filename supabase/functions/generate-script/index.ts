@@ -54,9 +54,9 @@ serve(async (req) => {
       );
     }
 
-    if (!['explainer', 'narrative', 'outline'].includes(scriptType)) {
+    if (!['explainer', 'narrative', 'outline', 'youtube', 'reels', 'movie', 'podcast', 'ad', 'blog'].includes(scriptType)) {
       return new Response(
-        JSON.stringify({ error: "Invalid script type: must be explainer, narrative, or outline" }),
+        JSON.stringify({ error: "Invalid script type" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -98,6 +98,48 @@ serve(async (req) => {
 - Suggested visuals or tone for each section
 - Transition suggestions between sections
 - Summary and outro`,
+
+      youtube: `Generate a YOUTUBE VIDEO SCRIPT with:
+- An attention-grabbing title and thumbnail idea
+- A strong hook in the first 10 seconds
+- Clear sections with timestamps
+- Engaging storytelling and examples
+- Call-to-action and outro`,
+
+      reels: `Generate a SHORT-FORM REELS/SHORTS SCRIPT with:
+- Instant hook (first 3 seconds)
+- Quick, punchy content (30-60 seconds)
+- Visual suggestions for each scene
+- Trending audio or effect suggestions
+- Strong ending with CTA`,
+
+      movie: `Generate a MOVIE SCENE SCRIPT with:
+- Scene setting and atmosphere
+- Character descriptions and motivations
+- Detailed dialogue exchanges
+- Action and emotion beats
+- Cinematic directions`,
+
+      podcast: `Generate a PODCAST EPISODE SCRIPT with:
+- Episode title and intro music cue
+- Host introduction and topic overview
+- Main discussion points with transitions
+- Guest questions (if applicable)
+- Outro with subscribe CTA`,
+
+      ad: `Generate an ADVERTISEMENT SCRIPT with:
+- Product/service introduction
+- Problem-solution framework
+- Key benefits and features
+- Emotional appeal
+- Strong call-to-action`,
+
+      blog: `Generate a BLOG POST OUTLINE with:
+- SEO-friendly title
+- Introduction with hook
+- Main sections with subheadings
+- Key points and examples
+- Conclusion with takeaways`,
     };
 
     const systemPrompt = `You are ScriptGenie, an expert AI script writer for influencers, YouTubers, and content creators. 
