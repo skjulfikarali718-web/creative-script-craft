@@ -8,51 +8,53 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    /* Base Colors - Dark Calming Theme */
+    --background: 222 47% 11%;  /* #0f172a */
+    --foreground: 210 40% 92%;  /* #e2e8f0 */
 
     --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
+    --card-foreground: 210 40% 92%;
 
     --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover-foreground: 210 40% 92%;
 
-    --primary: 199 89% 48%;
+    --primary: 199 89% 48%;  /* #0ea5e9 - cyan glow */
     --primary-foreground: 210 40% 98%;
     --primary-glow: 199 89% 58%;
 
-    --secondary: 262 83% 58%;
+    --secondary: 262 83% 58%;  /* #8b5cf6 - purple glow */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 215 25% 20%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 262 83% 58%;
+    --accent: 262 83% 58%;  /* #8b5cf6 */
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
+    --border: 215 25% 20%;
+    --input: 215 25% 17%;
     --ring: 199 89% 48%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Cinematic gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(199 89% 48%) 0%, hsl(262 83% 58%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(199 89% 48%) 100%);
-    --gradient-bg: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(217 33% 17%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(222 47% 11% / 0.6) 0%, hsl(217 33% 17% / 0.4) 100%);
-    --gradient-hero: radial-gradient(ellipse at top, hsl(199 89% 48% / 0.15), transparent 50%);
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(199 89% 48%), hsl(262 83% 58%));
+    --gradient-secondary: linear-gradient(135deg, hsl(262 83% 58%), hsl(199 89% 48%));
+    --gradient-bg: linear-gradient(135deg, hsl(222 47% 11%), hsl(215 25% 17%));
+    --gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+    --gradient-hero: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(139, 92, 246, 0.1));
     
-    /* Enhanced shadows and glows */
-    --shadow-glow: 0 0 60px hsl(199 89% 48% / 0.4);
-    --shadow-glow-violet: 0 0 60px hsl(262 83% 58% / 0.4);
-    --shadow-card: 0 8px 32px hsl(222 47% 11% / 0.8);
-    --shadow-elevated: 0 20px 60px hsl(222 47% 11% / 0.9);
-
-    /* Animations */
+    /* Shadows & Glows */
+    --shadow-glow-cyan: 0 0 30px rgba(14, 165, 233, 0.4);
+    --shadow-glow-purple: 0 0 30px rgba(139, 92, 246, 0.4);
+    --shadow-glow: 0 0 30px rgba(14, 165, 233, 0.4);
+    --shadow-elegant: 0 20px 60px -10px rgba(0, 0, 0, 0.6);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+    
+    /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
@@ -105,30 +107,40 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
-    background: var(--gradient-bg);
-    background-attachment: fixed;
-    font-family: 'Inter', sans-serif;
+    @apply min-h-screen antialiased;
+    background: linear-gradient(135deg, hsl(222 47% 11%), hsl(215 25% 17%));
+    color: hsl(210 40% 92%);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    @apply tracking-tight;
   }
 
-  /* Glassmorphic card effect */
+  code, pre {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  /* Glass card effect - Glassmorphism */
   .glass-card {
-    background: var(--gradient-card);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.3);
-    box-shadow: var(--shadow-card);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    @apply border border-white/10 rounded-xl;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
     transition: var(--transition-smooth);
   }
 
   .glass-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-elevated), var(--shadow-glow);
-    border-color: hsl(var(--primary) / 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow-cyan);
+    border-color: hsl(var(--primary) / 0.3);
   }
 
   /* Floating particles background */
@@ -164,12 +176,22 @@ All colors MUST be HSL.
     }
   }
 
-  /* Gradient button */
+  /* Gradient button with glow */
   .gradient-btn {
-    background: var(--gradient-primary);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    background: linear-gradient(135deg, hsl(199 89% 48%), hsl(262 83% 58%));
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    transition: var(--transition-smooth);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+  }
+
+  .gradient-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.5), 0 0 60px rgba(139, 92, 246, 0.3);
   }
 
   .gradient-btn::before {
@@ -179,22 +201,16 @@ All colors MUST be HSL.
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.2), transparent);
-    transition: left 0.5s ease;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
   }
 
   .gradient-btn:hover::before {
     left: 100%;
   }
 
-  .gradient-btn:hover {
-    filter: brightness(1.15);
-    box-shadow: var(--shadow-glow);
-    transform: translateY(-1px);
-  }
-
   .gradient-btn:active {
-    transform: translateY(0px);
+    transform: translateY(0px) scale(1);
   }
 
   /* Glow effect */
