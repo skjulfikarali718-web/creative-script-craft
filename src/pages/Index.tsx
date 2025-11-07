@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
+import { WelcomeModal } from "@/components/WelcomeModal";
+import { GuestLimitModal } from "@/components/GuestLimitModal";
 import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter } from "lucide-react";
 
 const scriptInputSchema = z.object({
@@ -29,6 +31,9 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [remainingGenerations, setRemainingGenerations] = useState(9);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
+  const [hasUsedGuestGeneration, setHasUsedGuestGeneration] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -44,21 +49,39 @@ const Index = () => {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      
+      // Check if user is new visitor (not returning)
+      const hasVisited = localStorage.getItem("scriptgenie_visited");
+      const guestUsed = localStorage.getItem("scriptgenie_guest_used");
+      
+      if (!user && !hasVisited) {
+        setShowWelcomeModal(true);
+        localStorage.setItem("scriptgenie_visited", "true");
+      }
+      
+      if (!user && guestUsed === "true") {
+        setHasUsedGuestGeneration(true);
+      }
     });
   }, []);
 
+  const handleGuestMode = () => {
+    setShowWelcomeModal(false);
+    toast({
+      title: "Guest Mode Activated! 🎉",
+      description: "Try ScriptGenie with 1 free generation. Sign in for unlimited access!",
+    });
+  };
+
   const onSubmit = async (data: ScriptInput) => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to generate scripts",
-        variant: "destructive",
-      });
-      navigate("/auth");
+    // Guest user check
+    if (!user && hasUsedGuestGeneration) {
+      setShowGuestLimitModal(true);
       return;
     }
 
-    if (remainingGenerations <= 0) {
+    // Authenticated user generation limit
+    if (user && remainingGenerations <= 0) {
       toast({
         title: "Generation Limit Reached",
         description: "You've used all your free generations. Upgrade to Premium!",
@@ -82,12 +105,29 @@ const Index = () => {
       if (error) throw error;
 
       setGeneratedScript(scriptData.script);
-      setRemainingGenerations((prev) => Math.max(0, prev - 1));
-
-      toast({
-        title: "Script Generated! ✨",
-        description: "Your AI-powered script is ready",
-      });
+      
+      // Handle guest vs authenticated user
+      if (!user) {
+        setHasUsedGuestGeneration(true);
+        localStorage.setItem("scriptgenie_guest_used", "true");
+        
+        // Show guest limit modal after a short delay
+        setTimeout(() => {
+          setShowGuestLimitModal(true);
+        }, 2000);
+        
+        toast({
+          title: "Script Generated! ✨",
+          description: "Sign in to generate unlimited scripts!",
+        });
+      } else {
+        setRemainingGenerations((prev) => Math.max(0, prev - 1));
+        
+        toast({
+          title: "Script Generated! ✨",
+          description: "Your AI-powered script is ready",
+        });
+      }
     } catch (error: any) {
       console.error("Script generation error:", error);
       toast({
@@ -146,6 +186,8 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       <ParticlesBackground />
+      <WelcomeModal open={showWelcomeModal} onGuestMode={handleGuestMode} />
+      <GuestLimitModal open={showGuestLimitModal} onClose={() => setShowGuestLimitModal(false)} />
       
       {/* Navbar */}
       <nav className="glass-card fixed top-0 left-0 right-0 z-50 border-b border-white/10">
@@ -173,7 +215,7 @@ const Index = () => {
             </Button>
           ) : (
             <Button onClick={() => navigate("/auth")} variant="default" size="sm" className="gradient-btn">
-              Sign In
+              {hasUsedGuestGeneration ? "Sign In for Full Access" : "Sign In"}
             </Button>
           )}
         </div>
@@ -233,9 +275,19 @@ const Index = () => {
           <div className="glass-card p-8 md:p-12 animate-scale-in">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold">AI Script Generator</h2>
-              <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20 animate-glow-pulse">
-                {remainingGenerations} Free Generations Left
-              </span>
+              {user ? (
+                <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20 animate-glow-pulse">
+                  {remainingGenerations} Free Generations Left
+                </span>
+              ) : (
+                <span className={`px-4 py-2 rounded-full text-sm font-medium border ${
+                  hasUsedGuestGeneration 
+                    ? 'bg-destructive/10 text-destructive border-destructive/20' 
+                    : 'bg-primary/10 text-primary border-primary/20 animate-glow-pulse'
+                }`}>
+                  {hasUsedGuestGeneration ? 'Guest Limit Reached' : '1 Free Guest Try'}
+                </span>
+              )}
             </div>
 
             <Form {...form}>
@@ -309,13 +361,18 @@ const Index = () => {
 
                 <Button
                   type="submit"
-                  disabled={isGenerating}
+                  disabled={isGenerating || (!user && hasUsedGuestGeneration)}
                   className="gradient-btn w-full h-14 text-lg font-semibold"
                 >
                   {isGenerating ? (
                     <>
                       <Sparkles className="mr-2 h-5 w-5 animate-spin" />
                       AI is writing your script...
+                    </>
+                  ) : (!user && hasUsedGuestGeneration) ? (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      Sign In to Continue
                     </>
                   ) : (
                     <>
@@ -324,6 +381,16 @@ const Index = () => {
                     </>
                   )}
                 </Button>
+                
+                {!user && (
+                  <p className="text-sm text-muted-foreground text-center mt-2">
+                    {hasUsedGuestGeneration ? (
+                      <span className="text-destructive">Guest limit reached • Sign in for unlimited scripts 🚀</span>
+                    ) : (
+                      <span className="text-primary">🎉 No account? Try 1 free generation!</span>
+                    )}
+                  </p>
+                )}
               </form>
             </Form>
 

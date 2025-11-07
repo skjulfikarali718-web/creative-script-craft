@@ -12,29 +12,28 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
+    // Check for authentication (optional for guest mode)
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    let user = null;
+    let isGuest = false;
+
+    if (authHeader) {
+      // Initialize Supabase client with user's auth
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } } }
       );
+
+      // Try to get authenticated user
+      const { data: userData } = await supabase.auth.getUser();
+      user = userData?.user || null;
     }
 
-    // Initialize Supabase client with user's auth
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Invalid token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // If no user, treat as guest
+    if (!user) {
+      isGuest = true;
+      console.log("Guest mode: Processing request without authentication");
     }
 
     const { topic, language, scriptType } = await req.json();
@@ -199,9 +198,13 @@ Remember: Write EVERYTHING in ${languageNames[language as keyof typeof languageN
     const data = await response.json();
     const script = data.choices[0].message.content;
 
-    console.log("Script generated successfully for user:", user.id);
+    if (isGuest) {
+      console.log("Script generated successfully for guest user");
+    } else {
+      console.log("Script generated successfully for user:", user?.id);
+    }
 
-    return new Response(JSON.stringify({ script }), {
+    return new Response(JSON.stringify({ script, isGuest }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
