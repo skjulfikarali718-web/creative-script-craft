@@ -77,7 +77,7 @@ Format your response as JSON with this structure: {"caption": "your caption here
   } catch (error) {
     console.error('Error in generate-captions-hashtags function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'An error occurred' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
