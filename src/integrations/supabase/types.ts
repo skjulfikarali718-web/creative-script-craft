@@ -71,33 +71,165 @@ export type Database = {
         }
         Relationships: []
       }
-      scripts: {
+      script_analytics: {
+        Row: {
+          comments: number | null
+          created_at: string
+          id: string
+          likes: number | null
+          platform: string | null
+          published_at: string | null
+          script_id: string
+          updated_at: string
+          user_id: string
+          views: number | null
+        }
+        Insert: {
+          comments?: number | null
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform?: string | null
+          published_at?: string | null
+          script_id: string
+          updated_at?: string
+          user_id: string
+          views?: number | null
+        }
+        Update: {
+          comments?: number | null
+          created_at?: string
+          id?: string
+          likes?: number | null
+          platform?: string | null
+          published_at?: string | null
+          script_id?: string
+          updated_at?: string
+          user_id?: string
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_analytics_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      script_collaborators: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          permission: string
+          script_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          permission: string
+          script_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          permission?: string
+          script_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_collaborators_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      script_comments: {
         Row: {
           content: string
           created_at: string
           id: string
-          language: string
-          script_type: string
-          topic: string
+          script_id: string
+          updated_at: string
           user_id: string
         }
         Insert: {
           content: string
           created_at?: string
           id?: string
-          language: string
-          script_type: string
-          topic: string
+          script_id: string
+          updated_at?: string
           user_id: string
         }
         Update: {
           content?: string
           created_at?: string
           id?: string
+          script_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "script_comments_script_id_fkey"
+            columns: ["script_id"]
+            isOneToOne: false
+            referencedRelation: "scripts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scripts: {
+        Row: {
+          comment_count: number | null
+          content: string
+          created_at: string
+          id: string
+          is_public: boolean | null
+          language: string
+          like_count: number | null
+          script_type: string
+          share_token: string | null
+          topic: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          comment_count?: number | null
+          content: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          language: string
+          like_count?: number | null
+          script_type: string
+          share_token?: string | null
+          topic: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          comment_count?: number | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
           language?: string
+          like_count?: number | null
           script_type?: string
+          share_token?: string | null
           topic?: string
           user_id?: string
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -106,7 +238,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_share_token: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
