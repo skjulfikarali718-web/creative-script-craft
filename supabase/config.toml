@@ -14,3 +14,9 @@ verify_jwt = true
 
 [functions.generate-visual-suggestions]
 verify_jwt = true
+
+[functions.analyze-topic]
+verify_jwt = false
+
+[functions.ai-chat-helper]
+verify_jwt = false

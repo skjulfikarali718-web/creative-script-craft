@@ -12,7 +12,11 @@ import { useToast } from "@/hooks/use-toast";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { GuestLimitModal } from "@/components/GuestLimitModal";
-import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter } from "lucide-react";
+import { TopicAnalyzer } from "@/components/TopicAnalyzer";
+import { AIChatHelper } from "@/components/AIChatHelper";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import { SyncStatus } from "@/components/SyncStatus";
+import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart } from "lucide-react";
 
 const scriptInputSchema = z.object({
   topic: z.string()
@@ -205,6 +209,12 @@ const Index = () => {
             <button onClick={() => navigate("/saved")} className="text-foreground/80 hover:text-primary transition-colors">
               Saved
             </button>
+            <button onClick={() => navigate("/analytics")} className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1">
+              <BarChart className="h-4 w-4" />
+              Analytics
+            </button>
+            <ThemeSwitcher />
+            <SyncStatus />
             <Button variant="outline" size="sm" className="border-secondary/50 text-secondary hover:bg-secondary/10">
               Premium 💎
             </Button>
@@ -271,7 +281,10 @@ const Index = () => {
 
       {/* Generator Section */}
       <section id="generator" className="py-20 px-4">
-        <div className="container mx-auto max-w-4xl">
+        <div className="container mx-auto max-w-4xl space-y-8">
+          {/* Topic Analyzer */}
+          <TopicAnalyzer onUseIdea={(idea) => form.setValue('topic', idea)} />
+
           <div className="glass-card p-8 md:p-12 animate-scale-in">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold">AI Script Generator</h2>
@@ -444,6 +457,9 @@ const Index = () => {
           </p>
         </div>
       </footer>
+
+      {/* AI Chat Helper - Floating */}
+      <AIChatHelper scriptContext={generatedScript} />
     </div>
   );
 };
