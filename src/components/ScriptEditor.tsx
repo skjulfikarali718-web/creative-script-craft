@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bold, Italic, Copy, Save, Download, X, Sparkles, Maximize2, Minimize2, Heart, Wand2 } from "lucide-react";
+import { Copy, Save, Download, X, Sparkles, Maximize2, Minimize2, Heart, Wand2, Smile, Lightbulb, Drama, Brain, Briefcase, HeartHandshake, Undo2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 interface ScriptEditorProps {
   initialContent: string;
@@ -16,8 +18,10 @@ interface ScriptEditorProps {
 export const ScriptEditor = ({ initialContent, onClose, onSave }: ScriptEditorProps) => {
   const [content, setContent] = useState(initialContent);
   const [originalContent, setOriginalContent] = useState(initialContent);
+  const [versionHistory, setVersionHistory] = useState<string[]>([initialContent]);
   const [selectedText, setSelectedText] = useState("");
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [currentTone, setCurrentTone] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleTextSelection = () => {
@@ -93,6 +97,7 @@ export const ScriptEditor = ({ initialContent, onClose, onSave }: ScriptEditorPr
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
         const newContent = content.substring(0, start) + data.enhancedText + content.substring(end);
+        saveVersion(newContent);
         setContent(newContent);
       }
 
@@ -108,6 +113,80 @@ export const ScriptEditor = ({ initialContent, onClose, onSave }: ScriptEditorPr
       });
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const applyTone = async (tone: "funny" | "motivational" | "dramatic" | "philosophical" | "professional" | "emotional", applyToAll: boolean = false) => {
+    const textToModify = applyToAll ? content : selectedText;
+    
+    if (!textToModify) {
+      toast({
+        title: "No text selected",
+        description: applyToAll ? "No content to modify." : "Please select some text to apply tone.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsEnhancing(true);
+    setCurrentTone(tone);
+    try {
+      const { data, error } = await supabase.functions.invoke('enhance-script', {
+        body: { text: textToModify, action: tone }
+      });
+
+      if (error) throw error;
+
+      if (applyToAll) {
+        saveVersion(data.enhancedText);
+        setContent(data.enhancedText);
+      } else {
+        const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+        if (textarea) {
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          const newContent = content.substring(0, start) + data.enhancedText + content.substring(end);
+          saveVersion(newContent);
+          setContent(newContent);
+        }
+      }
+
+      toast({
+        title: "Tone applied!",
+        description: `Successfully applied ${tone} tone.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Tone adjustment failed",
+        description: "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+      setCurrentTone(null);
+    }
+  };
+
+  const saveVersion = (newContent: string) => {
+    setVersionHistory(prev => [...prev, newContent]);
+  };
+
+  const undoLastChange = () => {
+    if (versionHistory.length > 1) {
+      const newHistory = [...versionHistory];
+      newHistory.pop();
+      setVersionHistory(newHistory);
+      setContent(newHistory[newHistory.length - 1]);
+      toast({
+        title: "Undone!",
+        description: "Reverted to previous version.",
+      });
+    } else {
+      toast({
+        title: "Nothing to undo",
+        description: "You're at the original version.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -154,74 +233,163 @@ export const ScriptEditor = ({ initialContent, onClose, onSave }: ScriptEditorPr
           </Button>
         </div>
 
-        {/* AI Enhancement Toolbar */}
-        <div className="flex flex-wrap items-center gap-2 p-4 border-b border-border bg-muted/20">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium">AI Enhance:</span>
+        {/* AI Tone Control Toolbar */}
+        <div className="p-4 border-b border-border bg-muted/20 space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="gap-1">
+              <Sparkles className="w-3 h-3" />
+              Tone Engine
+            </Badge>
             <Button 
               variant="outline" 
+              size="sm" 
+              className="gap-2" 
+              onClick={() => applyTone("funny", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <Smile className="w-4 h-4" />
+              Funny
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => applyTone("motivational", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <Lightbulb className="w-4 h-4" />
+              Motivational
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => applyTone("dramatic", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <Drama className="w-4 h-4" />
+              Dramatic
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => applyTone("philosophical", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <Brain className="w-4 h-4" />
+              Philosophical
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => applyTone("professional", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <Briefcase className="w-4 h-4" />
+              Professional
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-2"
+              onClick={() => applyTone("emotional", false)}
+              disabled={!selectedText || isEnhancing}
+            >
+              <HeartHandshake className="w-4 h-4" />
+              Emotional
+            </Button>
+            {selectedText && (
+              <>
+                <Separator orientation="vertical" className="h-6" />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => currentTone && applyTone(currentTone as any, true)}
+                  disabled={isEnhancing || !currentTone}
+                >
+                  Apply to All
+                </Button>
+              </>
+            )}
+          </div>
+          
+          <Separator />
+          
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Quick Enhance:</span>
+            <Button 
+              variant="ghost" 
               size="sm" 
               className="gap-2" 
               onClick={() => enhanceText("expand")}
               disabled={!selectedText || isEnhancing}
             >
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-3 h-3" />
               Expand
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               className="gap-2"
               onClick={() => enhanceText("shorten")}
               disabled={!selectedText || isEnhancing}
             >
-              <Minimize2 className="w-4 h-4" />
+              <Minimize2 className="w-3 h-3" />
               Shorten
             </Button>
             <Button 
-              variant="outline" 
-              size="sm" 
-              className="gap-2"
-              onClick={() => enhanceText("emotional")}
-              disabled={!selectedText || isEnhancing}
-            >
-              <Heart className="w-4 h-4" />
-              Emotional
-            </Button>
-            <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               className="gap-2"
               onClick={() => enhanceText("polish")}
               disabled={!selectedText || isEnhancing}
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-3 h-3" />
               Polish
             </Button>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm" 
               className="gap-2"
               onClick={regenerateParagraph}
               disabled={!selectedText || isEnhancing}
             >
-              <Wand2 className="w-4 h-4" />
+              <Wand2 className="w-3 h-3" />
               Regenerate
             </Button>
+            <div className="flex-1" />
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="gap-2"
+              onClick={undoLastChange}
+              disabled={versionHistory.length <= 1}
+            >
+              <Undo2 className="w-4 h-4" />
+              Undo
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleCopy}>
+              <Copy className="w-4 h-4" />
+              Copy
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={handleDownload}>
+              <Download className="w-4 h-4" />
+              Download
+            </Button>
+            <Button size="sm" className="gap-2 gradient-btn" onClick={handleSave}>
+              <Save className="w-4 h-4" />
+              Save
+            </Button>
           </div>
-          <div className="flex-1" />
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleCopy}>
-            <Copy className="w-4 h-4" />
-            Copy
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleDownload}>
-            <Download className="w-4 h-4" />
-            Download
-          </Button>
-          <Button size="sm" className="gap-2 gradient-btn" onClick={handleSave}>
-            <Save className="w-4 h-4" />
-            Save
-          </Button>
+          
+          {isEnhancing && currentTone && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground animate-pulse">
+              <Sparkles className="w-4 h-4" />
+              Rewriting in {currentTone} tone...
+            </div>
+          )}
         </div>
 
         {/* Editor with Compare View */}

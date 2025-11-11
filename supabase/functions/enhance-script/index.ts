@@ -31,13 +31,28 @@ serve(async (req) => {
         systemPrompt = 'You are a script enhancement AI. Condense the given text to its essential points while maintaining clarity and impact. Make it approximately 50% shorter.';
         break;
       case 'emotional':
-        systemPrompt = 'You are a script enhancement AI. Rewrite the given text to be more emotionally engaging and impactful. Add emotional language, vivid descriptions, and compelling storytelling elements.';
+        systemPrompt = 'You are a script enhancement AI. Rewrite the given text to be more emotionally engaging and impactful. Add emotional language, vivid descriptions, and compelling storytelling elements. Make it sentimental and heart-touching.';
         break;
       case 'polish':
         systemPrompt = 'You are a script enhancement AI. Polish the given text by improving grammar, enhancing clarity, refining storytelling tone, and making it more professional and engaging.';
         break;
       case 'regenerate':
         systemPrompt = 'You are a script enhancement AI. Completely rewrite the given text with fresh wording while keeping the same core message and structure. Be creative but maintain the original intent.';
+        break;
+      case 'funny':
+        systemPrompt = 'You are a script tone adjustment AI. Transform the given text into a funny, witty, and relatable version. Add humor, clever wordplay, and light-hearted elements while maintaining the core message. Use casual, conversational language that makes people smile.';
+        break;
+      case 'motivational':
+        systemPrompt = 'You are a script tone adjustment AI. Transform the given text into an uplifting, inspiring, and motivational version. Use powerful, encouraging language that energizes and drives action. Focus on possibilities, growth, and empowerment.';
+        break;
+      case 'dramatic':
+        systemPrompt = 'You are a script tone adjustment AI. Transform the given text into a dramatic, cinematic version with emotional tension and powerful pacing. Build intensity, use vivid imagery, and create compelling narrative momentum. Make it feel like a movie scene.';
+        break;
+      case 'philosophical':
+        systemPrompt = 'You are a script tone adjustment AI. Transform the given text into a deep, reflective, and philosophical version. Explore underlying meanings, raise thoughtful questions, and add contemplative insights. Use introspective and thought-provoking language.';
+        break;
+      case 'professional':
+        systemPrompt = 'You are a script tone adjustment AI. Transform the given text into a formal, structured, and professional version. Use clear, authoritative language with proper business terminology. Maintain objectivity and precision while being engaging.';
         break;
       default:
         throw new Error('Invalid action');
