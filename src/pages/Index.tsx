@@ -19,6 +19,7 @@ import { TopicAnalyzer } from "@/components/TopicAnalyzer";
 import { AIChatHelper } from "@/components/AIChatHelper";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SyncStatus } from "@/components/SyncStatus";
+import { SmartSummary } from "@/components/SmartSummary";
 import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart, LogOut, UserCog } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -44,6 +45,7 @@ const Index = () => {
   const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
   const [hasUsedGuestGeneration, setHasUsedGuestGeneration] = useState(false);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+  const [selectedEmotionMode, setSelectedEmotionMode] = useState("neutral");
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -103,6 +105,7 @@ const Index = () => {
 
     setIsGenerating(true);
     setGeneratedScript("");
+    setSelectedEmotionMode(data.emotionMode || 'neutral');
 
     try {
       const { data: scriptData, error } = await supabase.functions.invoke("generate-script", {
@@ -541,6 +544,14 @@ const Index = () => {
                   <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground/90">
                     {generatedScript}
                   </pre>
+                </div>
+
+                {/* Smart Summary Mode */}
+                <div className="mt-6">
+                  <SmartSummary 
+                    scriptContent={generatedScript}
+                    emotionMode={selectedEmotionMode}
+                  />
                 </div>
               </div>
             )}
