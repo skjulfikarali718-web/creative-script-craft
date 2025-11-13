@@ -12,11 +12,15 @@ import { useToast } from "@/hooks/use-toast";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { GuestLimitModal } from "@/components/GuestLimitModal";
+import { GuestModeBanner } from "@/components/GuestModeBanner";
+import { SignOutConfirmDialog } from "@/components/SignOutConfirmDialog";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { TopicAnalyzer } from "@/components/TopicAnalyzer";
 import { AIChatHelper } from "@/components/AIChatHelper";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SyncStatus } from "@/components/SyncStatus";
-import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart } from "lucide-react";
+import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart, LogOut, UserCog } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const scriptInputSchema = z.object({
   topic: z.string()
@@ -25,7 +29,8 @@ const scriptInputSchema = z.object({
     .max(500, "Topic must be less than 500 characters")
     .regex(/^[a-zA-Z0-9\s\p{L},.!?'-]+$/u, "Topic contains invalid characters"),
   language: z.enum(["english", "bengali", "hindi"]),
-  scriptType: z.enum(["youtube", "reels", "movie", "podcast", "ad", "blog"])
+  scriptType: z.enum(["youtube", "reels", "movie", "podcast", "ad", "blog"]),
+  emotionMode: z.enum(["neutral", "funny", "emotional", "serious", "mysterious"]).optional()
 });
 
 type ScriptInput = z.infer<typeof scriptInputSchema>;
@@ -38,6 +43,7 @@ const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
   const [hasUsedGuestGeneration, setHasUsedGuestGeneration] = useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,6 +53,7 @@ const Index = () => {
       topic: "",
       language: "english",
       scriptType: "youtube",
+      emotionMode: "neutral",
     },
   });
 
@@ -103,6 +110,7 @@ const Index = () => {
           topic: data.topic,
           language: data.language,
           scriptType: data.scriptType,
+          emotionMode: data.emotionMode,
         },
       });
 
@@ -187,52 +195,130 @@ const Index = () => {
     document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      // Clear local storage
+      localStorage.removeItem("scriptgenie_guest_used");
+      localStorage.removeItem("scriptgenie_visited");
+      setShowSignOutDialog(false);
+      toast({
+        title: "✅ Signed Out Successfully",
+        description: "You've been logged out. Come back anytime!",
+      });
+      navigate("/");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSwitchAccount = async () => {
+    try {
+      await supabase.auth.signOut();
+      localStorage.removeItem("scriptgenie_guest_used");
+      localStorage.removeItem("scriptgenie_visited");
+      toast({
+        title: "Switching Account",
+        description: "Redirecting to sign in...",
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Switch account error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to switch account. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen relative">
       <ParticlesBackground />
       <WelcomeModal open={showWelcomeModal} onGuestMode={handleGuestMode} />
       <GuestLimitModal open={showGuestLimitModal} onClose={() => setShowGuestLimitModal(false)} />
+      <SignOutConfirmDialog 
+        open={showSignOutDialog} 
+        onConfirm={handleSignOut}
+        onCancel={() => setShowSignOutDialog(false)}
+      />
+      
+      {/* Guest Mode Banner */}
+      {!user && (
+        <GuestModeBanner />
+      )}
       
       {/* Navbar */}
       <nav className="glass-card fixed top-0 left-0 right-0 z-50 border-b border-white/10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Creative Script Craft
-            </h1>
+        <div className="container mx-auto px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <span className="hidden sm:inline">Creative Script Craft</span>
+                <span className="sm:hidden">ScriptGenie</span>
+              </h1>
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-4">
+              <button onClick={scrollToGenerator} className="text-foreground/80 hover:text-primary transition-colors text-sm">
+                Generate
+              </button>
+              <button onClick={() => navigate("/saved")} className="text-foreground/80 hover:text-primary transition-colors text-sm">
+                Saved
+              </button>
+              <button onClick={() => navigate("/analytics")} className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1 text-sm">
+                <BarChart className="h-4 w-4" />
+                Analytics
+              </button>
+              <ThemeSwitcher />
+              <SyncStatus />
+              <Button variant="outline" size="sm" className="border-secondary/50 text-secondary hover:bg-secondary/10 text-xs">
+                Premium 💎
+              </Button>
+            </div>
+
+            {/* Auth Actions */}
+            <div className="flex items-center gap-2">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-2">
+                      <UserCog className="h-4 w-4" />
+                      <span className="hidden sm:inline">Account</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={handleSwitchAccount} className="cursor-pointer">
+                      <UserCog className="h-4 w-4 mr-2" />
+                      Switch Account
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setShowSignOutDialog(true)} className="cursor-pointer text-destructive">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button onClick={() => navigate("/auth")} variant="default" size="sm" className="gradient-btn text-xs sm:text-sm">
+                  {hasUsedGuestGeneration ? "Sign In" : "Sign In"}
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="hidden md:flex items-center gap-6">
-            <button onClick={scrollToGenerator} className="text-foreground/80 hover:text-primary transition-colors">
-              Generate
-            </button>
-            <button onClick={() => navigate("/saved")} className="text-foreground/80 hover:text-primary transition-colors">
-              Saved
-            </button>
-            <button onClick={() => navigate("/analytics")} className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1">
-              <BarChart className="h-4 w-4" />
-              Analytics
-            </button>
-            <ThemeSwitcher />
-            <SyncStatus />
-            <Button variant="outline" size="sm" className="border-secondary/50 text-secondary hover:bg-secondary/10">
-              Premium 💎
-            </Button>
-          </div>
-          {user ? (
-            <Button onClick={() => supabase.auth.signOut()} variant="ghost" size="sm">
-              Sign Out
-            </Button>
-          ) : (
-            <Button onClick={() => navigate("/auth")} variant="default" size="sm" className="gradient-btn">
-              {hasUsedGuestGeneration ? "Sign In for Full Access" : "Sign In"}
-            </Button>
-          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className={`pt-32 pb-20 px-4 ${!user ? 'pt-36 sm:pt-32' : ''}`}>
         <div className="container mx-auto text-center max-w-4xl">
           <div className="animate-fade-in">
             <div className="inline-block mb-4">
@@ -331,28 +417,55 @@ const Index = () => {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="language"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-lg">Language</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="glass-card border-primary/20 focus:border-primary/50 h-12">
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="glass-card border-primary/20">
-                          <SelectItem value="english">English</SelectItem>
-                          <SelectItem value="bengali">Bengali</SelectItem>
-                          <SelectItem value="hindi">Hindi</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="language"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg">Language</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="glass-card border-primary/20 focus:border-primary/50 h-12">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="glass-card border-primary/20">
+                            <SelectItem value="english">English</SelectItem>
+                            <SelectItem value="bengali">Bengali</SelectItem>
+                            <SelectItem value="hindi">Hindi</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="emotionMode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg">Emotion Mode 🎭</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="glass-card border-primary/20 focus:border-primary/50 h-12">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="glass-card border-primary/20">
+                            <SelectItem value="neutral">🎙️ Neutral</SelectItem>
+                            <SelectItem value="funny">😄 Funny</SelectItem>
+                            <SelectItem value="emotional">💖 Emotional</SelectItem>
+                            <SelectItem value="serious">🧠 Serious</SelectItem>
+                            <SelectItem value="mysterious">🕵️ Mysterious</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}
@@ -436,20 +549,20 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-12 mt-20">
+      <footer className="border-t border-white/10 py-12 mt-20 pb-24 lg:pb-12">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-foreground/70 mb-4">
+          <p className="text-foreground/70 mb-4 text-sm sm:text-base">
             Made with ❤️ by <span className="text-primary font-semibold">Sk Julfikar Ali</span>
           </p>
           <div className="flex items-center justify-center gap-6">
             <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
-              <Github className="h-6 w-6" />
+              <Github className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
             <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
-              <Twitter className="h-6 w-6" />
+              <Twitter className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
             <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
-              <Instagram className="h-6 w-6" />
+              <Instagram className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
           </div>
           <p className="text-xs text-foreground/50 mt-6">
@@ -460,6 +573,9 @@ const Index = () => {
 
       {/* AI Chat Helper - Floating */}
       <AIChatHelper scriptContext={generatedScript} />
+      
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav user={user} />
     </div>
   );
 };
