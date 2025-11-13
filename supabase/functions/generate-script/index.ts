@@ -36,7 +36,7 @@ serve(async (req) => {
       console.log("Guest mode: Processing request without authentication");
     }
 
-    const { topic, language, scriptType } = await req.json();
+    const { topic, language, scriptType, emotionMode = "neutral" } = await req.json();
     
     // Validate inputs
     if (!topic || typeof topic !== 'string' || topic.trim().length < 5 || topic.length > 500) {
@@ -149,9 +149,41 @@ You write engaging, well-structured scripts that are:
 - Perfect for social media and video content
 - Authentic and relatable
 
+${emotionMode !== "neutral" ? `EMOTION MODE: ${emotionMode.toUpperCase()}
+${getEmotionInstructions(emotionMode)}` : ""}
+
 CRITICAL: You MUST write the entire script in ${languageNames[language as keyof typeof languageNames]}. 
 Every word, every line, every section must be in ${languageNames[language as keyof typeof languageNames]}.
 Do not mix languages. Use native script and vocabulary.`;
+
+    function getEmotionInstructions(emotion: string): string {
+      const emotionMap: Record<string, string> = {
+        funny: `- Use light-hearted, witty language and playful expressions
+- Include clever wordplay, puns, or humorous observations
+- Keep tone upbeat and entertaining
+- Add relatable, amusing examples or scenarios
+- Use comedic timing and pacing`,
+        
+        emotional: `- Use sentimental and heart-touching language
+- Create emotional depth and connection with the audience
+- Include inspiring or moving narratives
+- Focus on human experiences and feelings
+- Build emotional crescendos that resonate deeply`,
+        
+        serious: `- Maintain a professional and authoritative tone
+- Use precise, formal language
+- Focus on facts, logic, and credible information
+- Structure content with clear reasoning
+- Avoid casual expressions or humor`,
+        
+        mysterious: `- Create intrigue and curiosity from the start
+- Use suspenseful and enigmatic language
+- Build tension through pacing and word choice
+- Include unexpected twists or revelations
+- Keep audience guessing and engaged`,
+      };
+      return emotionMap[emotion] || "";
+    }
 
     const userPrompt = `Topic: ${topic}
 

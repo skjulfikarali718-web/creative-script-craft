@@ -266,4 +266,54 @@ All colors MUST be HSL.
   ::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--primary-glow));
   }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .glass-card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .container {
+      @apply px-3;
+    }
+
+    body {
+      font-size: 14px;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+    }
+  }
+
+  /* Touch-friendly button sizes for mobile */
+  @media (max-width: 640px) {
+    button:not(.no-touch-target), 
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    /* Optimize form inputs for mobile */
+    input, textarea, select {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
+  }
+
+  /* Smooth transitions for mobile interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .hover-lift:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+
+    .gradient-btn:active {
+      transform: scale(0.95);
+    }
+  }
 }
