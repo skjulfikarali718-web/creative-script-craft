@@ -18,3 +18,6 @@ verify_jwt = false
 
 [functions.research-assistant]
 verify_jwt = false
+
+[functions.generate-summary]
+verify_jwt = false
