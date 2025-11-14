@@ -12,8 +12,8 @@ export const WelcomeModal = ({ open, onGuestMode }: WelcomeModalProps) => {
   const navigate = useNavigate();
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="glass-card border-primary/20 max-w-md">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onGuestMode()}>
+      <DialogContent className="glass-card border-primary/20 max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             Welcome to ScriptGenie! 🚀
