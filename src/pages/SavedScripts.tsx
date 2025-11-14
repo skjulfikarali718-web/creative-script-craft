@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import jsPDF from "jspdf";
 import { ShareScript } from "@/components/ShareScript";
+import { ScriptFormatter } from "@/components/ScriptFormatter";
 
 interface SavedScript {
   id: string;
@@ -269,6 +270,14 @@ export default function SavedScripts() {
             </Button>
             <h1 className="text-3xl font-bold flex-1">{selectedScript.topic}</h1>
             <Button
+              onClick={() => navigate("/", { state: { editScript: selectedScript } })}
+              className="gap-2"
+              variant="outline"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Script
+            </Button>
+            <Button
               onClick={() => {
                 const menu = document.createElement("div");
                 menu.className = "fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50";
@@ -332,9 +341,7 @@ export default function SavedScripts() {
             </div>
             
             <div className="prose prose-sm max-w-none">
-              <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-                {selectedScript.content}
-              </div>
+              <ScriptFormatter content={selectedScript.content} />
             </div>
           </Card>
         </div>

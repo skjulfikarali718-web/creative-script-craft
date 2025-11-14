@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { text, action, context } = await req.json();
-    console.log('Research assistant request:', { text, action, context });
+    const { text, action, context, topic, content, scriptType } = await req.json();
+    console.log('Research assistant request:', { text, action, context, topic, scriptType });
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -48,6 +48,12 @@ serve(async (req) => {
       case 'suggest-related':
         systemPrompt = `You are a research assistant. Suggest one interesting, related fact or detail connected to the given topic. Keep it concise and relevant.`;
         userPrompt = `Suggest an interesting related fact about: "${text}"`;
+        break;
+
+      case 'generate_sources':
+        systemPrompt = `You are a research assistant. Generate 3-5 credible source references based on the script content. Return as JSON array: 
+[{"title": "Source Name", "description": "Brief description of what this source covers", "url": "optional URL if available"}]`;
+        userPrompt = `Generate source references for this ${scriptType} script about "${topic}". Content excerpt: "${content}"`;
         break;
 
       default:

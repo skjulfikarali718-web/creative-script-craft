@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,6 +20,8 @@ import { AIChatHelper } from "@/components/AIChatHelper";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { SyncStatus } from "@/components/SyncStatus";
 import { SmartSummary } from "@/components/SmartSummary";
+import { ScriptFormatter } from "@/components/ScriptFormatter";
+import { SourcesPanel } from "@/components/SourcesPanel";
 import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart, LogOut, UserCog } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -48,6 +50,7 @@ const Index = () => {
   const [selectedEmotionMode, setSelectedEmotionMode] = useState("neutral");
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const form = useForm<ScriptInput>({
     resolver: zodResolver(scriptInputSchema),
@@ -76,7 +79,24 @@ const Index = () => {
         setHasUsedGuestGeneration(true);
       }
     });
-  }, []);
+
+    // Check if we're coming from edit mode
+    if (location.state?.editScript) {
+      const editScript = location.state.editScript;
+      setGeneratedScript(editScript.content);
+      form.setValue("topic", editScript.topic);
+      form.setValue("scriptType", editScript.script_type);
+      form.setValue("language", editScript.language);
+      
+      // Clear the state
+      window.history.replaceState({}, document.title);
+      
+      // Scroll to generator
+      setTimeout(() => {
+        document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
+  }, [location]);
 
   const handleGuestMode = () => {
     setShowWelcomeModal(false);
@@ -200,16 +220,26 @@ const Index = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
-      // Clear local storage
-      localStorage.removeItem("scriptgenie_guest_used");
-      localStorage.removeItem("scriptgenie_visited");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all session data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Reset state
+      setUser(null);
+      setGeneratedScript("");
+      setHasUsedGuestGeneration(false);
       setShowSignOutDialog(false);
+      
       toast({
         title: "✅ Signed Out Successfully",
         description: "You've been logged out. Come back anytime!",
       });
-      navigate("/");
+      
+      // Force reload to clear any cached state
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
       toast({
@@ -263,6 +293,9 @@ const Index = () => {
             {/* Logo */}
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ScriptGenie
+              </span>
               <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 <span className="hidden sm:inline">Creative Script Craft</span>
                 <span className="sm:hidden">ScriptGenie</span>
@@ -540,10 +573,8 @@ const Index = () => {
                     </Button>
                   </div>
                 </div>
-                <div className="glass-card p-6 max-h-[500px] overflow-y-auto">
-                  <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-foreground/90">
-                    {generatedScript}
-                  </pre>
+                <div className="glass-card p-6 max-h-[500px] overflow-y-auto border-primary/20">
+                  <ScriptFormatter content={generatedScript} />
                 </div>
 
                 {/* Smart Summary Mode */}
@@ -551,6 +582,15 @@ const Index = () => {
                   <SmartSummary 
                     scriptContent={generatedScript}
                     emotionMode={selectedEmotionMode}
+                  />
+                </div>
+
+                {/* Sources & References */}
+                <div className="mt-6">
+                  <SourcesPanel 
+                    topic={form.getValues("topic")}
+                    content={generatedScript}
+                    scriptType={form.getValues("scriptType")}
                   />
                 </div>
               </div>
@@ -563,7 +603,7 @@ const Index = () => {
       <footer className="border-t border-white/10 py-12 mt-20 pb-24 lg:pb-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-foreground/70 mb-4 text-sm sm:text-base">
-            Made with ❤️ by <span className="text-primary font-semibold">Sk Julfikar Ali</span>
+            Made with ❤️ by <span className="text-primary font-semibold">Sk Julfikar Ali</span> | <span className="text-accent font-semibold">ScriptGenie</span> - Your AI Script Writing Companion
           </p>
           <div className="flex items-center justify-center gap-6">
             <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">

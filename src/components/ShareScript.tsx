@@ -21,6 +21,16 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
 
   const generateShareLink = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to share scripts.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Generate share token using the database function
       const { data: tokenData, error: tokenError } = await supabase
         .rpc('generate_share_token');
@@ -34,7 +44,8 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
           share_token: tokenData,
           is_public: true 
         })
-        .eq('id', scriptId);
+        .eq('id', scriptId)
+        .eq('user_id', user.id);
 
       if (updateError) throw updateError;
 
@@ -45,6 +56,7 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
         description: "Anyone with this link can view your script.",
       });
     } catch (error) {
+      console.error("Share link error:", error);
       toast({
         title: "Failed to generate link",
         description: "Please try again.",
@@ -87,7 +99,14 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
         .eq('email', collaboratorEmail)
         .single();
 
-      if (profileError) throw new Error("User not found");
+      if (profileError || !profiles) {
+        toast({
+          title: "User not found",
+          description: "No account found with this email address.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { error } = await supabase
         .from('script_collaborators')
@@ -107,6 +126,7 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
 
       setCollaboratorEmail("");
     } catch (error) {
+      console.error("Collaborator error:", error);
       toast({
         title: "Failed to add collaborator",
         description: "Please check the email and try again.",
