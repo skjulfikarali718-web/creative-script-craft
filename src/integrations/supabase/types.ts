@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      guest_usage: {
+        Row: {
+          first_request_at: string | null
+          id: string
+          identifier: string
+          last_request_at: string | null
+          request_count: number | null
+        }
+        Insert: {
+          first_request_at?: string | null
+          id?: string
+          identifier: string
+          last_request_at?: string | null
+          request_count?: number | null
+        }
+        Update: {
+          first_request_at?: string | null
+          id?: string
+          identifier?: string
+          last_request_at?: string | null
+          request_count?: number | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -238,6 +262,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_guest_limit: {
+        Args: { _identifier: string; _max_requests?: number }
+        Returns: Json
+      }
       generate_share_token: { Args: never; Returns: string }
     }
     Enums: {

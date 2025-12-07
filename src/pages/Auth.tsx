@@ -8,6 +8,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import type { User, Session } from '@supabase/supabase-js';
+import { z } from "zod";
+
+// Validation schemas
+const emailSchema = z.string().trim().email("Please enter a valid email address").max(255, "Email is too long");
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .max(128, "Password is too long")
+  .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+  .regex(/[a-z]/, "Must contain at least one lowercase letter")
+  .regex(/[0-9]/, "Must contain at least one number")
+  .regex(/[^A-Za-z0-9]/, "Must contain at least one special character");
+
+const getPasswordStrength = (pwd: string): number => {
+  let strength = 0;
+  if (pwd.length >= 8) strength++;
+  if (/[A-Z]/.test(pwd)) strength++;
+  if (/[a-z]/.test(pwd)) strength++;
+  if (/[0-9]/.test(pwd)) strength++;
+  if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+  return strength;
+};
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -19,13 +40,11 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect to home if user is logged in
         if (session?.user) {
           setTimeout(() => {
             navigate("/");
@@ -34,7 +53,6 @@ const Auth = () => {
       }
     );
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -50,19 +68,23 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    // Validate email
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
       toast({
-        title: "Error",
-        description: "Please enter both email and password",
+        title: "Invalid email",
+        description: emailResult.error.errors[0].message,
         variant: "destructive",
       });
       return;
     }
 
-    if (password.length < 6) {
+    // Validate password
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
       toast({
-        title: "Error",
-        description: "Password must be at least 6 characters",
+        title: "Weak password",
+        description: passwordResult.error.errors[0].message,
         variant: "destructive",
       });
       return;
@@ -107,10 +129,21 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
+    // Validate email format (not content for login)
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password) {
       toast({
         title: "Error",
-        description: "Please enter both email and password",
+        description: "Please enter your password",
         variant: "destructive",
       });
       return;
@@ -215,10 +248,17 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
+                  {password && (
+                    <div className="space-y-1">
+                      <p className={`text-xs ${getPasswordStrength(password) >= 4 ? "text-green-600" : getPasswordStrength(password) >= 2 ? "text-yellow-600" : "text-red-600"}`}>
+                        Strength: {["Very Weak", "Weak", "Fair", "Good", "Strong"][getPasswordStrength(password)]}
+                      </p>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
-                    Password must be at least 6 characters
+                    Min 8 chars with uppercase, lowercase, number & special character
                   </p>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>

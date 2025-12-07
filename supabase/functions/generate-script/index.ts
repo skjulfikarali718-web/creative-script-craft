@@ -12,28 +12,58 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase admin client for server-side operations
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
     // Check for authentication (optional for guest mode)
     const authHeader = req.headers.get("Authorization");
     let user = null;
     let isGuest = false;
 
     if (authHeader) {
-      // Initialize Supabase client with user's auth
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? "",
         { global: { headers: { Authorization: authHeader } } }
       );
 
-      // Try to get authenticated user
       const { data: userData } = await supabase.auth.getUser();
       user = userData?.user || null;
     }
 
-    // If no user, treat as guest
+    // If no user, treat as guest with server-side limit enforcement
     if (!user) {
       isGuest = true;
-      console.log("Guest mode: Processing request without authentication");
+      
+      // Get client IP for guest tracking
+      const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                       req.headers.get("x-real-ip") || 
+                       "unknown";
+      
+      const identifier = `guest_${clientIp}`;
+      
+      // Check server-side guest limit
+      const { data: limitCheck, error: limitError } = await supabaseAdmin
+        .rpc('check_guest_limit', { 
+          _identifier: identifier,
+          _max_requests: 9 
+        });
+
+      if (limitError) {
+        console.error("Guest limit check error:", limitError.message);
+      } else if (limitCheck && !limitCheck.allowed) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Guest limit reached",
+            message: "Sign in to continue generating scripts",
+            remaining: 0
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const { topic, language, scriptType, emotionMode = "neutral" } = await req.json();
