@@ -7,7 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Share2, Link, Mail, Users, Check, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
 
+const emailSchema = z.string().trim().email("Please enter a valid email address").max(255);
 interface ShareScriptProps {
   scriptId: string;
 }
@@ -79,10 +81,23 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
   };
 
   const inviteCollaborator = async () => {
-    if (!collaboratorEmail) {
+    const trimmedEmail = collaboratorEmail.trim().toLowerCase();
+    
+    if (!trimmedEmail) {
       toast({
         title: "Email required",
         description: "Please enter a collaborator email.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email format
+    const emailResult = emailSchema.safeParse(trimmedEmail);
+    if (!emailResult.success) {
+      toast({
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
         variant: "destructive",
       });
       return;
@@ -92,17 +107,18 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Find user by email
+      // Find user by email - use generic error message to prevent enumeration
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('user_id')
-        .eq('email', collaboratorEmail)
-        .single();
+        .eq('email', trimmedEmail)
+        .maybeSingle();
 
       if (profileError || !profiles) {
+        // Generic message to prevent email enumeration
         toast({
-          title: "User not found",
-          description: "No account found with this email address.",
+          title: "Could not add collaborator",
+          description: "Please verify the email address and try again.",
           variant: "destructive",
         });
         return;
@@ -126,10 +142,10 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
 
       setCollaboratorEmail("");
     } catch (error) {
-      console.error("Collaborator error:", error);
+      // Don't log full error object in production
       toast({
-        title: "Failed to add collaborator",
-        description: "Please check the email and try again.",
+        title: "Could not add collaborator",
+        description: "Please try again later.",
         variant: "destructive",
       });
     }
