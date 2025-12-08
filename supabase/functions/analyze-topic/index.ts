@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.75.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +15,54 @@ serve(async (req) => {
   }
 
   try {
+    // Initialize Supabase admin client for rate limiting
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Check for authentication
+    const authHeader = req.headers.get("Authorization");
+    let user = null;
+
+    if (authHeader) {
+      const supabase = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const { data: userData } = await supabase.auth.getUser();
+      user = userData?.user || null;
+    }
+
+    // If no user, enforce rate limiting
+    if (!user) {
+      const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || 
+                       req.headers.get("x-real-ip") || 
+                       "unknown";
+      
+      const identifier = `topic_${clientIp}`;
+      
+      const { data: limitCheck, error: limitError } = await supabaseAdmin
+        .rpc('check_guest_limit', { 
+          _identifier: identifier,
+          _max_requests: 20 
+        });
+
+      if (limitError) {
+        console.error("Rate limit check error:", limitError.message);
+      } else if (limitCheck && !limitCheck.allowed) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Rate limit exceeded",
+            message: "Sign in to continue analyzing topics",
+            remaining: 0
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     const { niche } = await req.json();
 
     // Validate niche input
