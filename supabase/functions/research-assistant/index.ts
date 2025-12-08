@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_TEXT_LENGTH = 5000;
+const MAX_CONTEXT_LENGTH = 5000;
+const MAX_TOPIC_LENGTH = 500;
+const MAX_CONTENT_LENGTH = 10000;
+const VALID_ACTIONS = ['fact-check', 'expand-fact', 'smooth-integrate', 'suggest-related', 'generate_sources'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -13,7 +20,88 @@ serve(async (req) => {
 
   try {
     const { text, action, context, topic, content, scriptType } = await req.json();
-    console.log('Research assistant request:', { text, action, context, topic, scriptType });
+    console.log('Research assistant request:', { action, hasText: !!text, hasTopic: !!topic, scriptType });
+
+    // Validate action
+    if (!action) {
+      return new Response(
+        JSON.stringify({ error: 'Action is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof action !== 'string' || !VALID_ACTIONS.includes(action)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid action. Must be one of: ${VALID_ACTIONS.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate text if provided
+    if (text !== undefined && text !== null) {
+      if (typeof text !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Text must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (text.length > MAX_TEXT_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Text must be less than ${MAX_TEXT_LENGTH} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Validate context if provided
+    if (context !== undefined && context !== null) {
+      if (typeof context === 'object') {
+        const contextStr = JSON.stringify(context);
+        if (contextStr.length > MAX_CONTEXT_LENGTH) {
+          return new Response(
+            JSON.stringify({ error: `Context must be less than ${MAX_CONTEXT_LENGTH} characters` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      } else if (typeof context === 'string' && context.length > MAX_CONTEXT_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Context must be less than ${MAX_CONTEXT_LENGTH} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Validate topic if provided
+    if (topic !== undefined && topic !== null) {
+      if (typeof topic !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Topic must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (topic.length > MAX_TOPIC_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Topic must be less than ${MAX_TOPIC_LENGTH} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Validate content if provided
+    if (content !== undefined && content !== null) {
+      if (typeof content !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Content must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (content.length > MAX_CONTENT_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Content must be less than ${MAX_CONTENT_LENGTH} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
@@ -96,7 +184,7 @@ serve(async (req) => {
     const data = await response.json();
     const result = data.choices[0].message.content;
 
-    console.log('Research assistant result:', result);
+    console.log('Research assistant completed successfully');
 
     return new Response(
       JSON.stringify({ result }),

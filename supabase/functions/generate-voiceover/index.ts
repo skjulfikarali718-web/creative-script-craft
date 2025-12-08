@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_TEXT_LENGTH = 4000;
+const VALID_VOICES = ['male', 'female'];
+const VALID_TONES = ['calm', 'energetic', 'dramatic'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -14,8 +19,46 @@ serve(async (req) => {
   try {
     const { text, voice, tone } = await req.json();
 
+    // Validate text input
     if (!text) {
-      throw new Error('Text is required');
+      return new Response(
+        JSON.stringify({ error: 'Text is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof text !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Text must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (text.length > MAX_TEXT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Text must be less than ${MAX_TEXT_LENGTH} characters. Current length: ${text.length}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate voice if provided
+    if (voice !== undefined && voice !== null) {
+      if (typeof voice !== 'string' || !VALID_VOICES.includes(voice)) {
+        return new Response(
+          JSON.stringify({ error: `Invalid voice. Must be one of: ${VALID_VOICES.join(', ')}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Validate tone if provided
+    if (tone !== undefined && tone !== null) {
+      if (typeof tone !== 'string' || !VALID_TONES.includes(tone)) {
+        return new Response(
+          JSON.stringify({ error: `Invalid tone. Must be one of: ${VALID_TONES.join(', ')}` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
@@ -45,7 +88,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'tts-1',
-        input: text.substring(0, 4000), // Limit to 4000 chars for TTS
+        input: text,
         voice: selectedVoice,
         response_format: 'mp3',
       }),
