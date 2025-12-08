@@ -107,45 +107,18 @@ export const ShareScript = ({ scriptId }: ShareScriptProps) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Find user by email - use generic error message to prevent enumeration
-      const { data: profiles, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .eq('email', trimmedEmail)
-        .maybeSingle();
-
-      if (profileError || !profiles) {
-        // Generic message to prevent email enumeration
-        toast({
-          title: "Could not add collaborator",
-          description: "Please verify the email address and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await supabase
-        .from('script_collaborators')
-        .insert({
-          script_id: scriptId,
-          user_id: profiles.user_id,
-          owner_id: user.id,
-          permission
-        });
-
-      if (error) throw error;
-
+      // Note: We cannot look up users by email from the client side for security reasons.
+      // Instead, use an invitation system where collaborators accept via email link.
+      // For now, show a message explaining this limitation.
       toast({
-        title: "Collaborator added!",
-        description: `${collaboratorEmail} has been invited.`,
+        title: "Feature limitation",
+        description: "Please share the script link directly with your collaborator instead.",
+        variant: "default",
       });
-
-      setCollaboratorEmail("");
     } catch (error) {
-      // Don't log full error object in production
       toast({
-        title: "Could not add collaborator",
-        description: "Please try again later.",
+        title: "Error",
+        description: "Could not process request. Please try again.",
         variant: "destructive",
       });
     }

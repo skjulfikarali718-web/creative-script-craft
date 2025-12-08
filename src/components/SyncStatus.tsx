@@ -18,7 +18,7 @@ export const SyncStatus = () => {
     const checkConnection = async () => {
       setIsSyncing(true);
       try {
-        const { error } = await supabase.from('profiles').select('count').limit(1);
+        const { error } = await supabase.from('scripts').select('id').limit(1);
         setIsOnline(!error);
       } catch {
         setIsOnline(false);
