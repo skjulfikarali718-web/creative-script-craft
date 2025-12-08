@@ -5,6 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_TEXT_LENGTH = 10000;
+const VALID_ACTIONS = ['expand', 'shorten', 'emotional', 'polish', 'regenerate', 'funny', 'motivational', 'dramatic', 'philosophical', 'professional'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -13,8 +17,41 @@ serve(async (req) => {
   try {
     const { text, action } = await req.json();
 
-    if (!text || !action) {
-      throw new Error('Text and action are required');
+    // Validate text input
+    if (!text) {
+      return new Response(
+        JSON.stringify({ error: 'Text is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof text !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Text must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (text.length > MAX_TEXT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Text must be less than ${MAX_TEXT_LENGTH} characters` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate action input
+    if (!action) {
+      return new Response(
+        JSON.stringify({ error: 'Action is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof action !== 'string' || !VALID_ACTIONS.includes(action)) {
+      return new Response(
+        JSON.stringify({ error: `Invalid action. Must be one of: ${VALID_ACTIONS.join(', ')}` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');

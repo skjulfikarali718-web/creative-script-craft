@@ -5,6 +5,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_NICHE_LENGTH = 500;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -13,8 +16,26 @@ serve(async (req) => {
   try {
     const { niche } = await req.json();
 
+    // Validate niche input
     if (!niche) {
-      throw new Error('Niche or topic is required');
+      return new Response(
+        JSON.stringify({ error: 'Niche or topic is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof niche !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Niche must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (niche.length > MAX_NICHE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Niche must be less than ${MAX_NICHE_LENGTH} characters` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');

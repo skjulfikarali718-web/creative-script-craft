@@ -5,6 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_MESSAGE_LENGTH = 5000;
+const MAX_CONTEXT_LENGTH = 10000;
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -13,8 +17,43 @@ serve(async (req) => {
   try {
     const { message, scriptContext } = await req.json();
 
+    // Validate message input
     if (!message) {
-      throw new Error('Message is required');
+      return new Response(
+        JSON.stringify({ error: 'Message is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof message !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Message must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Message must be less than ${MAX_MESSAGE_LENGTH} characters` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate scriptContext if provided
+    if (scriptContext !== undefined && scriptContext !== null) {
+      if (typeof scriptContext !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Script context must be a string' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (scriptContext.length > MAX_CONTEXT_LENGTH) {
+        return new Response(
+          JSON.stringify({ error: `Script context must be less than ${MAX_CONTEXT_LENGTH} characters` }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
