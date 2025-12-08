@@ -264,6 +264,23 @@ export type Database = {
         Returns: Json
       }
       generate_share_token: { Args: never; Returns: string }
+      get_script_by_share_token: {
+        Args: { _share_token: string }
+        Returns: {
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          is_public: boolean
+          language: string
+          like_count: number
+          script_type: string
+          share_token: string
+          topic: string
+          user_id: string
+          view_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
