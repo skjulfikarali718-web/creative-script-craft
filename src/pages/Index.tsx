@@ -314,6 +314,15 @@ const Index = () => {
                 <BarChart className="h-4 w-4" />
                 Analytics
               </button>
+              <a 
+                href="https://www.instagram.com/rajali10024/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-foreground/80 hover:text-pink-500 transition-colors"
+                aria-label="Follow on Instagram"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
               <ThemeSwitcher />
               <SyncStatus />
               <Button variant="outline" size="sm" className="border-secondary/50 text-secondary hover:bg-secondary/10 text-xs">
