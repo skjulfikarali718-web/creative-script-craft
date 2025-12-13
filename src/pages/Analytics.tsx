@@ -12,7 +12,7 @@ const Analytics = () => {
         <Button
           variant="ghost"
           className="mb-6 gap-2"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/app")}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Generator

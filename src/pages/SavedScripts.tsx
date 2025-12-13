@@ -243,7 +243,7 @@ export default function SavedScripts() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate("/")} className="flex-1">
+            <Button variant="outline" onClick={() => navigate("/app")} className="flex-1">
               Back to Home
             </Button>
             <Button onClick={() => navigate("/auth")} className="flex-1">
@@ -270,7 +270,7 @@ export default function SavedScripts() {
             </Button>
             <h1 className="text-3xl font-bold flex-1">{selectedScript.topic}</h1>
             <Button
-              onClick={() => navigate("/", { state: { editScript: selectedScript } })}
+              onClick={() => navigate("/app", { state: { editScript: selectedScript } })}
               className="gap-2"
               variant="outline"
             >
@@ -357,7 +357,7 @@ export default function SavedScripts() {
             <h1 className="text-4xl font-bold">Saved Scripts</h1>
             <p className="text-muted-foreground">Manage and organize your generated scripts</p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/")} className="gap-2">
+          <Button variant="outline" onClick={() => navigate("/app")} className="gap-2">
             <ArrowLeft className="w-4 h-4" />
             Back to Generator
           </Button>
@@ -413,7 +413,7 @@ export default function SavedScripts() {
                 : "Try adjusting your search or filters"}
             </p>
             {scripts.length === 0 && (
-              <Button onClick={() => navigate("/")}>
+              <Button onClick={() => navigate("/app")}>
                 Create Your First Script
               </Button>
             )}

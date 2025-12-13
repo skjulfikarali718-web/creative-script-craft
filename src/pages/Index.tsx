@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { ParticlesBackground } from "@/components/ParticlesBackground";
-import { WelcomeModal } from "@/components/WelcomeModal";
 import { GuestLimitModal } from "@/components/GuestLimitModal";
 import { GuestModeBanner } from "@/components/GuestModeBanner";
 import { SignOutConfirmDialog } from "@/components/SignOutConfirmDialog";
@@ -22,7 +21,7 @@ import { SyncStatus } from "@/components/SyncStatus";
 import { SmartSummary } from "@/components/SmartSummary";
 import { ScriptFormatter } from "@/components/ScriptFormatter";
 import { SourcesPanel } from "@/components/SourcesPanel";
-import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, Github, Twitter, BarChart, LogOut, UserCog } from "lucide-react";
+import { Sparkles, Copy, Download, Save, BookOpen, Zap, Film, Podcast, Youtube, Instagram, BarChart, LogOut, UserCog } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 const scriptInputSchema = z.object({
@@ -41,8 +40,8 @@ const Index = () => {
   const [generatedScript, setGeneratedScript] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isGuestMode, setIsGuestMode] = useState(false);
   const [remainingGenerations, setRemainingGenerations] = useState(9);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
   const [hasUsedGuestGeneration, setHasUsedGuestGeneration] = useState(false);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -62,18 +61,32 @@ const Index = () => {
   });
 
   useEffect(() => {
+    // Check if coming from guest mode selection
+    if (location.state?.guestMode) {
+      setIsGuestMode(true);
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title);
+      
+      toast({
+        title: "Guest Mode Activated! 🎉",
+        description: "Try ScriptGenie with 1 free generation. Sign in for unlimited access!",
+      });
+    }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
       
-      // Check if user is new visitor (not returning)
-      const hasVisited = localStorage.getItem("scriptgenie_visited");
-      const guestUsed = localStorage.getItem("scriptgenie_guest_used");
-      
-      if (!user && !hasVisited) {
-        setShowWelcomeModal(true);
-        localStorage.setItem("scriptgenie_visited", "true");
+      // If user is logged in, they're not in guest mode
+      if (user) {
+        setIsGuestMode(false);
+      } else if (!location.state?.guestMode) {
+        // If not logged in and not explicitly choosing guest mode, redirect to welcome
+        navigate("/", { replace: true });
+        return;
       }
       
+      // Check if guest has already used their generation
+      const guestUsed = localStorage.getItem("scriptgenie_guest_used");
       if (!user && guestUsed === "true") {
         setHasUsedGuestGeneration(true);
       }
@@ -95,15 +108,8 @@ const Index = () => {
         document.getElementById("generator")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     }
-  }, [location]);
+  }, [location, navigate, toast]);
 
-  const handleGuestMode = () => {
-    setShowWelcomeModal(false);
-    toast({
-      title: "Guest Mode Activated! 🎉",
-      description: "Try ScriptGenie with 1 free generation. Sign in for unlimited access!",
-    });
-  };
 
   const onSubmit = async (data: ScriptInput) => {
     // Guest user check
@@ -272,7 +278,6 @@ const Index = () => {
   return (
     <div className="min-h-screen relative">
       <ParticlesBackground />
-      <WelcomeModal open={showWelcomeModal} onGuestMode={handleGuestMode} />
       <GuestLimitModal open={showGuestLimitModal} onClose={() => setShowGuestLimitModal(false)} />
       <SignOutConfirmDialog 
         open={showSignOutDialog} 
@@ -281,7 +286,7 @@ const Index = () => {
       />
       
       {/* Guest Mode Banner */}
-      {!user && (
+      {isGuestMode && !user && (
         <GuestModeBanner />
       )}
       
@@ -614,13 +619,12 @@ const Index = () => {
             Made with ❤️ by <span className="text-primary font-semibold">Sk Julfikar Ali</span> | <span className="text-accent font-semibold">ScriptGenie</span> - Your AI Script Writing Companion
           </p>
           <div className="flex items-center justify-center gap-6">
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
-              <Github className="h-5 w-5 sm:h-6 sm:w-6" />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
-              <Twitter className="h-5 w-5 sm:h-6 sm:w-6" />
-            </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-foreground/70 hover:text-primary transition-colors">
+            <a 
+              href="https://www.instagram.com/rajali10024/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-foreground/70 hover:text-pink-500 transition-colors"
+            >
               <Instagram className="h-5 w-5 sm:h-6 sm:w-6" />
             </a>
           </div>

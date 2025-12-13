@@ -47,7 +47,7 @@ const Auth = () => {
         
         if (session?.user) {
           setTimeout(() => {
-            navigate("/");
+            navigate("/app");
           }, 0);
         }
       }
@@ -58,7 +58,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        navigate("/");
+        navigate("/app");
       }
     });
 
