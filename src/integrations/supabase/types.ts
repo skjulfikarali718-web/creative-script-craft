@@ -214,11 +214,13 @@ export type Database = {
           comment_count: number | null
           content: string
           created_at: string
+          episode_number: number | null
           id: string
           is_public: boolean | null
           language: string
           like_count: number | null
           script_type: string
+          series_id: string | null
           share_token: string | null
           topic: string
           user_id: string
@@ -228,11 +230,13 @@ export type Database = {
           comment_count?: number | null
           content: string
           created_at?: string
+          episode_number?: number | null
           id?: string
           is_public?: boolean | null
           language: string
           like_count?: number | null
           script_type: string
+          series_id?: string | null
           share_token?: string | null
           topic: string
           user_id: string
@@ -242,15 +246,58 @@ export type Database = {
           comment_count?: number | null
           content?: string
           created_at?: string
+          episode_number?: number | null
           id?: string
           is_public?: boolean | null
           language?: string
           like_count?: number | null
           script_type?: string
+          series_id?: string | null
           share_token?: string | null
           topic?: string
           user_id?: string
           view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scripts_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "video_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_series: {
+        Row: {
+          color_theme: string | null
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color_theme?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color_theme?: string | null
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
