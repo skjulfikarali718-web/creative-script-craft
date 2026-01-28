@@ -1,4 +1,4 @@
-import { Home, BookOpen, BarChart, User } from "lucide-react";
+import { Home, BookOpen, BarChart, User, Film } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -12,9 +12,9 @@ export const MobileBottomNav = ({ user }: MobileBottomNavProps) => {
 
   const navItems = [
     { icon: Home, label: "Home", path: "/" },
+    { icon: Film, label: "Series", path: "/series" },
     { icon: BookOpen, label: "Saved", path: "/saved" },
     { icon: BarChart, label: "Analytics", path: "/analytics" },
-    { icon: User, label: user ? "Account" : "Sign In", path: "/auth" },
   ];
 
   return (
